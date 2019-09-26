@@ -28,8 +28,8 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
         ui_sldGH.setValue((ui_sldGH.getMinimum() + ui_sldGH.getMaximum())/2);
         
         m_lienzo = new Lienzo();
-        m_lienzo.setModeloAPantalla(0.4);
-        m_lienzo.setOrigenPantalla(new Point(400, 400));
+        m_lienzo.setModeloAPantalla(0.8);
+        m_lienzo.setOrigenPantalla(new Point(800, 500));
         ui_ContenedorLienzo.add(m_lienzo, BorderLayout.CENTER);
 
         redibuja();

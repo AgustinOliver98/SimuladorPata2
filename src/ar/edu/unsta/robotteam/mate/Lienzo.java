@@ -9,6 +9,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 /**
+ * Componente Swing sobre el que puede dibujarse una lista objetos "Dibujables"
  *
  * @author gustavo
  */

@@ -3,6 +3,7 @@ package ar.edu.unsta.robotteam.mate;
 import java.awt.Point;
 
 /**
+ * Herramientas para el cálculo matemático y físico
  *
  * @author gustavo
  */
@@ -22,10 +23,12 @@ public class Herramientas {
     public static Point.Double solveQuadEq(Point.Double p_centerA,
             double p_radiusA, Point.Double p_centerB, double p_radiusB) {
 
+        /*
         System.out.format("solveQuadEq: A(%f,%f r=%f)   B(%f,%f r=%f)%n",
                 p_centerA.x, p_centerA.y, p_radiusA, p_centerB.x,
                 p_centerB.y, p_radiusB);
-
+        */
+        
         Point.Double l_newCenterB = new Point.Double(p_centerB.x - p_centerA.x,
                 p_centerB.y - p_centerA.y);
 
