@@ -26,14 +26,34 @@ public class ModeloBrazo {
      * Distancia desde el eje del brazo, hasta el punto B
      */
     private double m_AB = 30.0;
+    /**
+     * Ángulo fijo entre OA y OB.
+     * Se recalcula cuando cambia OA o AB
+     */
+    private double m_AOB;
 
+    /**
+     * Punto del brazo, donde aplica el extremo móvil del actuador del hombro
+     */
     private Point.Double m_B;
 
-    private double m_BC = 300.0;
-    private double m_BCMax = 400.0;
-    private double m_BCMin = 200.0;
-    private Point.Double m_C = new Point.Double(150.0, -10.0);
+    private double m_BCMin = 220.0;
+    private double m_BCMax = m_BCMin * 1.8;
+    /**
+     * Actuador del hombro
+     */
+    private double m_BC = (m_BCMin + m_BCMax) / 2;
+    /**
+     * Punto fijo de la base, donde aplica el extremo fijo del actuador del hombro
+     */
+    private Point.Double m_C = new Point.Double(90.0, -30.0);
+    /**
+     * Codo
+     */
     private Point.Double m_D;
+    /**
+     * Largo del antebrazo
+     */
     private double m_DE = 400.0;
     private double m_DF;
     /**
@@ -43,24 +63,21 @@ public class ModeloBrazo {
     private double m_DG;
 
     /**
+     * Punto de la muñeca
+     */
+    private Point.Double m_E;
+    private Point.Double m_F;
+    /**
      * Ángulo GDF
      */
     private double m_FDG;
-    
-    private Point.Double m_E;
-    private Point.Double m_F;
     private double m_FG = 30.0;
     private Point.Double m_G;
-    private double m_GH = 400.0;
-    private double m_GHMax = 500.0;
     private double m_GHMin = 300.0;
-    private Point.Double m_H = new Point.Double(-150.0, -10.0);
+    private double m_GHMax = m_GHMin * 1.8;
+    private double m_GH = (m_GHMin + m_GHMax) / 2;
+    private Point.Double m_H = new Point.Double(-100.0, -10.0);
 
-    /**
-     * Ángulo fijo entre OA y OB.
-     * Se recalcula cuando cambia OA o AB
-     */
-    private double m_AOB;
     /**
      * Origen del sistema
      */
@@ -71,20 +88,18 @@ public class ModeloBrazo {
      * Se recalcula cuando cambia OA o AB
      */
     private double m_OB;
-    /**
-     * Distancia del origen al punto de aplicación fijo del actuador del hombro.
-     * Se recalcula cuando cambia C
-     */
-    private double m_OC;
     private double m_OD = 400.0;
 
     private List<Dibujable> m_dibujables;
+    private boolean m_recalculoValido = false;
+    private List<Dibujable> m_simulaciones;
 
     public ModeloBrazo() {
         // Usa el setter para que se recalcule OB
         setOA(300.0);
         // Usa el setter para que se recalcule DG
         setDF(100.0);
+        setSimulaciones(new LinkedList<Dibujable>());
         recalcula();
     }
 
@@ -149,9 +164,6 @@ public class ModeloBrazo {
 
     public void setC(Point.Double C) {
         this.m_C = C;
-        if (m_C != null) {
-            m_OC = Math.hypot(m_C.x, m_C.y);
-        } // end if
     }
 
     public double getDE() {
@@ -173,6 +185,14 @@ public class ModeloBrazo {
 
     public List<Dibujable> getDibujables() {
         return m_dibujables;
+    }
+
+    public Point.Double getE() {
+        return m_E;
+    }
+
+    public void setE(Point.Double E) {
+        this.m_E = E;
     }
 
     public double getFG() {
@@ -247,17 +267,6 @@ public class ModeloBrazo {
         recalcOB();
     }
 
-    private void recalcOB() {
-        m_OB = Math.hypot(m_OA, m_AB);
-        m_AOB = Math.atan2(m_AB, m_OA);
-    }
-    
-    private void recalcDG() {
-        m_DG = Math.hypot(m_DF, m_FG);
-        m_FDG = Math.atan2(m_FG, m_DF);
-    }
-
-
     /**
      * Get the value of OD
      *
@@ -277,37 +286,127 @@ public class ModeloBrazo {
     }
 
     /**
-     * Reubica todos los puntos móviles
+     * Get the value of simulaciones
+     *
+     * @return the value of simulaciones
      */
-    public void recalcula() {
+    public List<Dibujable> getSimulaciones() {
+        return m_simulaciones;
+    }
 
-        m_B = Herramientas.solveQuadEq(m_O, m_OB, m_C, m_BC);
+    /**
+     * Set the value of simulaciones
+     *
+     * @param p_simulaciones new value of simulaciones
+     */
+    private void setSimulaciones(List<Dibujable> p_simulaciones) {
+        this.m_simulaciones = p_simulaciones;
+    }
+
+    /**
+     * Get the value of recalculoValido
+     *
+     * @return the value of recalculoValido
+     */
+    public boolean isRecalculoValido() {
+        return m_recalculoValido;
+    }
+
+    /**
+     * Set the value of recalculoValido
+     *
+     * @param p_recalculoValido new value of recalculoValido
+     */
+    public void setRecalculoValido(boolean p_recalculoValido) {
+        this.m_recalculoValido = p_recalculoValido;
+    }
+
+    private void recalcDG() {
+        m_DG = Math.hypot(m_DF, m_FG);
+        m_FDG = Math.atan2(m_FG, m_DF);
+    }
+
+    private void recalcOB() {
+        m_OB = Math.hypot(m_OA, m_AB);
+        m_AOB = Math.atan2(m_AB, m_OA);
+    }
+
+    /**
+     * Reubica todos los puntos móviles.
+     * La secuencia es:
+     * 1. calcula B como la intersección de las circunf. centro O y centro C
+     * 2. Calcula A, rotando desde OB hacia OA
+     * 3. Calcula D, extendiendo OA
+     * 4. Calcula G, como la intersecc. de las circunf. centro D y centro H
+     * 5. Calcula F, rotando desde DG hacia DF
+     * 6. Calcula E, extendiendo DF
+     *
+     * Devuelve true si el recálculo generó posiciones válidas de los puntos.
+     * O false si alguno de los puntos no pudo ser calculado.
+     */
+    public boolean recalcula() {
+
+        Point.Double l_A, l_B, l_D, l_G;
+
+        l_B = Herramientas.solveQuadEq(m_O, m_OB, m_C, m_BC,
+                Herramientas.RootIndex.ROOT_SECOND);
+
+        if (l_B == null) {
+            // Sin solución
+            setRecalculoValido(false);
+            return false;
+        } // end if
 
         // Recalcula A. Debería hacerse sin trigonometría, con una matriz de 
         // transformación lineal
-        double l_XOB = Math.atan2(m_B.y, m_B.x);
+        double l_XOB = Math.atan2(l_B.y, l_B.x);
         double l_XOA = l_XOB + m_AOB;
 
-        m_A = new Point.Double(m_OA * Math.cos(l_XOA), m_OA * Math.sin(l_XOA));
+        l_A = new Point.Double(m_OA * Math.cos(l_XOA), m_OA * Math.sin(l_XOA));
 
         // Recalcula D.
         double l_OD_OA = m_OD / m_OA;
 
-        m_D = new Point.Double(l_OD_OA * m_A.x, l_OD_OA * m_A.y);
+        l_D = new Point.Double(l_OD_OA * l_A.x, l_OD_OA * l_A.y);
 
-        
-        m_G = Herramientas.solveQuadEq(m_D, m_DG, m_H, m_GH);
-        m_F = new Point.Double(-getDF(), getOD());
-        m_E = new Point.Double(m_F.x, m_F.y - getFG());
+        l_G = Herramientas.solveQuadEq(l_D, m_DG, m_H, m_GH,
+                Herramientas.RootIndex.ROOT_FIRST);
+
+        if (l_G == null) {
+            // Sin solución
+            setRecalculoValido(false);
+            return false;
+        } // end if
+
+        // Commit
+        m_A = l_A;
+        m_B = l_B;
+        m_D = l_D;
+        m_G = l_G;
+
+        double l_XDG = Math.atan2(m_G.y - m_D.y, m_G.x - m_D.x);
+        double l_XDF = l_XDG - m_FDG;
+        double l_DFx = m_DF * Math.cos(l_XDF);
+        double l_DFy = m_DF * Math.sin(l_XDF);
+        m_F = new Point.Double(l_DFx + m_D.x, l_DFy + m_D.y);
+
+        double l_DE_DF = m_DE / m_DF;
+
+        m_E = new Point.Double(l_DFx * l_DE_DF + m_D.x, l_DFy * l_DE_DF + m_D.y);
 
         redibuja();
+        setRecalculoValido(true);
+        return true;
+
     }
 
     private void redibuja() {
         m_dibujables = new LinkedList<>();
+        m_dibujables.addAll(m_simulaciones);
 
         // Eje X
-        SegmentoLinea l_nuevaLinea = new SegmentoLinea(0, 0, 700, 0, Color.GRAY, 0);
+        SegmentoLinea l_nuevaLinea = new SegmentoLinea(0, 0, 700, 0, Color.GRAY,
+                0);
         m_dibujables.add(l_nuevaLinea);
         // Eje Y
         l_nuevaLinea = new SegmentoLinea(0, 0, 0, 700, Color.GRAY, 0);
@@ -320,7 +419,8 @@ public class ModeloBrazo {
                 = new SegmentoLinea(m_D.x, m_D.y, m_E.x, m_E.y, Color.GREEN, 30);
         m_dibujables.add(l_nuevaLinea);
         // Actuador de hombro
-        l_nuevaLinea = new SegmentoLinea(m_C.x, m_C.y, m_B.x, m_B.y, Color.RED, 10);
+        l_nuevaLinea = new SegmentoLinea(m_C.x, m_C.y, m_B.x, m_B.y, Color.RED,
+                10);
         m_dibujables.add(l_nuevaLinea);
         // Actuador de codo
         l_nuevaLinea = new SegmentoLinea(m_H.x, m_H.y, m_G.x, m_G.y,
@@ -328,12 +428,15 @@ public class ModeloBrazo {
         m_dibujables.add(l_nuevaLinea);
 
         // Sistema de ecuaciones del hombro
-        m_dibujables.add(new Circunferencia(m_O, m_OB, Color.GRAY));
-        m_dibujables.add(new Circunferencia(m_C, m_BC, Color.GRAY));
-
+        m_dibujables.
+                add(new Circunferencia(m_O, m_OB, new Color(240, 240, 240)));
+        m_dibujables.
+                add(new Circunferencia(m_C, m_BC, new Color(240, 240, 240)));
         // Sistema de ecuaciones del codo
-        m_dibujables.add(new Circunferencia(m_H, m_GH, new Color(0, 192, 0)));
-        m_dibujables.add(new Circunferencia(m_D, m_DG, new Color(0, 192, 0)));
+        m_dibujables.
+                add(new Circunferencia(m_H, m_GH, new Color(240, 240, 240)));
+        m_dibujables.
+                add(new Circunferencia(m_D, m_DG, new Color(240, 240, 240)));
 
         m_dibujables.add(new Etiqueta(0.0, 0.0, Color.GRAY, "O"));
         m_dibujables.add(new Etiqueta(700.0, 0.0, Color.GRAY, "X"));
@@ -342,9 +445,9 @@ public class ModeloBrazo {
         m_dibujables.add(new Etiqueta(m_B, Color.BLUE, "B"));
         m_dibujables.add(new Etiqueta(m_C, Color.RED, "C"));
         m_dibujables.add(new Etiqueta(m_D, Color.BLUE, "D"));
-        m_dibujables.add(new Etiqueta(m_E, Color.GREEN, "E"));
-        m_dibujables.add(new Etiqueta(m_F, Color.YELLOW, "F"));
-        m_dibujables.add(new Etiqueta(m_G, Color.GREEN, "G"));
+        m_dibujables.add(new Etiqueta(m_E, Color.BLACK, "E"));
+        m_dibujables.add(new Etiqueta(m_F, Color.BLACK, "F"));
+        m_dibujables.add(new Etiqueta(m_G, Color.BLACK, "G"));
         m_dibujables.add(new Etiqueta(m_H, Color.ORANGE, "H"));
 
     }
