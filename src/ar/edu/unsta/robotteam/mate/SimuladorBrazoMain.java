@@ -22,14 +22,6 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
         initComponents();
         m_modelo = new ModeloBrazo();
 
-        System.out.format("%f < %f < %f; %f < %f < %f %n",
-                m_modelo.getBCMin(),
-                m_modelo.getBC(),
-                m_modelo.getBCMax(),
-                m_modelo.getGHMin(),
-                m_modelo.getGH(),
-                m_modelo.getGHMax()
-        );
         ui_sldBC.setMaximum((int) m_modelo.getBCMax());
         ui_sldBC.setMinimum((int) m_modelo.getBCMin());
 
@@ -38,9 +30,11 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
 
         ui_sldBC.setValue((int) m_modelo.getBC());
         ui_sldGH.setValue((int) m_modelo.getGH());
+        
+        ui_lblBC.setText(String.valueOf(m_modelo.getBC()));
+        ui_lblGH.setText(String.valueOf(m_modelo.getGH()));
 
-        System.out.format("#### %d %d %n", ui_sldBC.getValue(), ui_sldGH.
-                getValue());
+        
         m_lienzo = new Lienzo();
         m_lienzo.setModeloAPantalla(0.8);
         m_lienzo.setOrigenPantalla(new Point(800, 500));
@@ -67,6 +61,12 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
         ui_sldBC = new javax.swing.JSlider();
         ui_sldGH = new javax.swing.JSlider();
         ui_cmdSimula = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        ui_lblBC = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        ui_lblGH = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
         ui_ContenedorLienzo = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -79,30 +79,30 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Dialog", 3, 18)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/graphics/logo_64.png"))); // NOI18N
-        jLabel1.setText("      SIMULADOR DE BRAZO v2019-09-29_21-12");
+        jLabel1.setText("      SIMULADOR DE BRAZO v2019-10-08_10-30");
         jLabel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
         jLabel1.setOpaque(true);
         jPanel1.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 930, -1));
 
         jLabel2.setText("Actuador BC:");
-        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 120, -1, -1));
+        jPanel1.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 110, -1, -1));
 
         jLabel3.setText("Actuador GH:");
-        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 120, -1, -1));
+        jPanel1.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 110, -1, -1));
 
         ui_sldBC.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 ui_sldBCStateChanged(evt);
             }
         });
-        jPanel1.add(ui_sldBC, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 120, -1, -1));
+        jPanel1.add(ui_sldBC, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 120, 140, -1));
 
         ui_sldGH.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 ui_sldGHStateChanged(evt);
             }
         });
-        jPanel1.add(ui_sldGH, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 120, -1, -1));
+        jPanel1.add(ui_sldGH, new org.netbeans.lib.awtextra.AbsoluteConstraints(490, 120, 150, -1));
 
         ui_cmdSimula.setText("Simula");
         ui_cmdSimula.addActionListener(new java.awt.event.ActionListener() {
@@ -111,6 +111,24 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
             }
         });
         jPanel1.add(ui_cmdSimula, new org.netbeans.lib.awtextra.AbsoluteConstraints(730, 110, -1, -1));
+
+        jLabel4.setText("(hombro)");
+        jPanel1.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 130, -1, -1));
+
+        jLabel5.setText("(codo)");
+        jPanel1.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 130, -1, -1));
+
+        ui_lblBC.setText("0000");
+        jPanel1.add(ui_lblBC, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 110, -1, -1));
+
+        jLabel7.setText("mm");
+        jPanel1.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 130, -1, -1));
+
+        ui_lblGH.setText("0000");
+        jPanel1.add(ui_lblGH, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 110, -1, -1));
+
+        jLabel9.setText("mm");
+        jPanel1.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(650, 130, -1, -1));
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_START);
 
@@ -128,6 +146,7 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
         } // end if
         double l_BC = ui_sldBC.getValue();
         m_modelo.setBC(l_BC);
+        ui_lblBC.setText(String.valueOf(l_BC));
         redibuja();
     }//GEN-LAST:event_ui_sldBCStateChanged
 
@@ -137,6 +156,8 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
         } // end if
         double l_GH = ui_sldGH.getValue();
         m_modelo.setGH(l_GH);
+        ui_lblGH.setText(String.valueOf(l_GH));
+        
         redibuja();
     }//GEN-LAST:event_ui_sldGHStateChanged
 
@@ -230,33 +251,7 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info
-                    : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(SimuladorBrazoMain.class.
-                    getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(SimuladorBrazoMain.class.
-                    getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(SimuladorBrazoMain.class.
-                    getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(SimuladorBrazoMain.class.
-                    getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
+
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -270,9 +265,15 @@ public class SimuladorBrazoMain extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel ui_ContenedorLienzo;
     private javax.swing.JButton ui_cmdSimula;
+    private javax.swing.JLabel ui_lblBC;
+    private javax.swing.JLabel ui_lblGH;
     private javax.swing.JSlider ui_sldBC;
     private javax.swing.JSlider ui_sldGH;
     // End of variables declaration//GEN-END:variables

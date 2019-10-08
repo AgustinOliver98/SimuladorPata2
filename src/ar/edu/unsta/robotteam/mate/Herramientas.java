@@ -36,17 +36,12 @@ public class Herramientas {
             double p_radiusA, Point.Double p_centerB, double p_radiusB,
             RootIndex p_rootIndex) {
 
-        /*
-        System.out.format("solveQuadEq: A(%f,%f r=%f)   B(%f,%f r=%f)%n",
-                p_centerA.x, p_centerA.y, p_radiusA, p_centerB.x,
-                p_centerB.y, p_radiusB);
-         */
         Point.Double l_newCenterB = new Point.Double(p_centerB.x - p_centerA.x,
                 p_centerB.y - p_centerA.y);
 
         Point.Double l_root = solveQuadEq(p_radiusA, l_newCenterB, p_radiusB,
                 p_rootIndex);
-        
+
         if (l_root == null) {
             // Sin solución
             return null;
@@ -150,4 +145,36 @@ public class Herramientas {
         }
     }
 
+    /**
+     * Gira el punto "A", "angle" radianes alrededor de su origen. Luego
+     * lo desplaza "toMove"
+     *
+     * @param p_A punto a rotar y mover
+     * @param p_toRotateAngle ángulo de rotación, en radianes
+     * @param p_toMove desplazamiento
+     * @return punto rotado y desplazado
+     */
+    public static Point.Double rotateAndMove(Point.Double p_A, double p_toRotateAngle,
+            Point.Double p_toMove) {
+
+        double l_startAngle = Math.atan2(p_A.y, p_A.x);
+        double l_endAngle = l_startAngle + p_toRotateAngle;
+        
+        double l_hypot = Math.hypot(p_A.x, p_A.y);
+        
+        Point.Double l_B = new Point.Double(l_hypot * Math.cos(l_endAngle)
+                + p_toMove.x, l_hypot * Math.sin(l_endAngle) + p_toMove.y);
+
+        return l_B;
+    }
+    
+    /**
+     * Ángulo formado por el segmento que inicia en "from" y termina en "to"
+     * @param p_from
+     * @param p_to
+     * @return 
+     */
+    public static double angle(Point.Double p_from, Point.Double p_to) {
+        return Math.atan2(p_to.y - p_from.y, p_to.x - p_from.x);
+    }
 }

@@ -51,6 +51,14 @@ public class ModeloBrazo {
      * Codo
      */
     private Point.Double m_D;
+
+    public Point.Double getO() {
+        return new Point2D.Double(0.0, 0.0);
+    }
+
+    public Point.Double getD() {
+        return m_D;
+    }
     /**
      * Largo del antebrazo
      */
@@ -66,13 +74,23 @@ public class ModeloBrazo {
      * Punto de la muñeca
      */
     private Point.Double m_E;
+    /**
+     * Punto sobre el antebrazo, perpendicular a G
+     */
     private Point.Double m_F;
     /**
      * Ángulo GDF
      */
     private double m_FDG;
     private double m_FG = 30.0;
+    /**
+     * Punto móvil del actuador de codo
+     */
     private Point.Double m_G;
+
+    public Point2D.Double getG() {
+        return m_G;
+    }
     private double m_GHMin = 300.0;
     private double m_GHMax = m_GHMin * 1.8;
     private double m_GH = (m_GHMin + m_GHMax) / 2;
@@ -91,6 +109,7 @@ public class ModeloBrazo {
     private double m_OD = 400.0;
 
     private List<Dibujable> m_dibujables;
+    private ModeloFisico m_modeloFisico;
     private boolean m_recalculoValido = false;
     private List<Dibujable> m_simulaciones;
 
@@ -100,6 +119,9 @@ public class ModeloBrazo {
         // Usa el setter para que se recalcule DG
         setDF(100.0);
         setSimulaciones(new LinkedList<Dibujable>());
+        ModeloFisico l_fisico = new ModeloFisico(this);
+        setModeloFisico(l_fisico);
+
         recalcula();
     }
 
@@ -112,6 +134,10 @@ public class ModeloBrazo {
 
         recalcOB();
 
+    }
+
+    public Point.Double getB() {
+        return m_B;
     }
 
     public double getBC() {
@@ -257,6 +283,24 @@ public class ModeloBrazo {
         this.m_H = H;
     }
 
+    /**
+     * Get the value of modeloFisico
+     *
+     * @return the value of modeloFisico
+     */
+    public ModeloFisico getModeloFisico() {
+        return m_modeloFisico;
+    }
+
+    /**
+     * Set the value of modeloFisico
+     *
+     * @param p_modeloFisico new value of modeloFisico
+     */
+    public void setModeloFisico(ModeloFisico p_modeloFisico) {
+        this.m_modeloFisico = p_modeloFisico;
+    }
+
     public double getOA() {
         return m_OA;
     }
@@ -394,6 +438,11 @@ public class ModeloBrazo {
 
         m_E = new Point.Double(l_DFx * l_DE_DF + m_D.x, l_DFy * l_DE_DF + m_D.y);
 
+        if (!getModeloFisico().recalcula()) {
+            setRecalculoValido(false);
+            return false;
+        } // end if
+
         redibuja();
         setRecalculoValido(true);
         return true;
@@ -449,6 +498,10 @@ public class ModeloBrazo {
         m_dibujables.add(new Etiqueta(m_F, Color.BLACK, "F"));
         m_dibujables.add(new Etiqueta(m_G, Color.BLACK, "G"));
         m_dibujables.add(new Etiqueta(m_H, Color.ORANGE, "H"));
+
+        if (m_modeloFisico != null) {
+            m_dibujables.addAll(m_modeloFisico.getDibujables());
+        } // end if
 
     }
 
